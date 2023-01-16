@@ -11,7 +11,7 @@ namespace NhiLeTeam.Controllers
     [ApiController]
     public class NhiLeAPIController : ControllerBase
     {
-
+       
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult <IEnumerable<NhiLeDTO>> GetNhiLes()
@@ -203,8 +203,43 @@ namespace NhiLeTeam.Controllers
                 return "Upload Failed";
             }
         }
+        
+        [HttpPost]
+        [Route("UploadNotLimitV3")]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [RequestSizeLimit(100L * 1024L * 1024L * 1024L)]
+        [RequestFormLimits(MultipartBodyLengthLimit = 100L * 1024L * 1024L * 1024L)]
+        public async Task<string> UploadNotLimitV3([FromForm] UserDTO obj)
+        {
+            if (obj.files.Length > 0)
+            {
+                try
+                {
+                    if (!Directory.Exists(_webHostEnvironmen.WebRootPath + "\\Video\\"))
+                    {
+                        Directory.CreateDirectory(_webHostEnvironmen.WebRootPath + "\\Video\\");
 
+                    }
+                    using (FileStream filestream = System.IO.File.Create(_webHostEnvironmen.WebRootPath + "\\Video\\" + obj.files.FileName))
+                    {
+                        obj.files.CopyTo(filestream);
+                        filestream.Flush();
+                        return "\\Video\\" + obj.files.FileName;
+                    }
 
+                }
+                catch (Exception ex)
+                {
+                    return ex.ToString();
+                }
+            }
+            else
+            {
+                return "Upload Failed";
+            }
+        }
 
 
 
