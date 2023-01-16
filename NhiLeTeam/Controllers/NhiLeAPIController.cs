@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using NhiLeTeam.Data;
 using NhiLeTeam.Models;
 using NhiLeTeam.Models.Dto;
@@ -166,7 +167,47 @@ namespace NhiLeTeam.Controllers
             }
         }
 
-        
+        [HttpPost]
+        [Route("UploadNotLimitV2")]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [RequestSizeLimit(10L * 1024L * 1024L * 1024L)]
+        [RequestFormLimits(MultipartBodyLengthLimit = 10L * 1024L * 1024L * 1024L)]
+        public async Task<string> UploadNotLimitV2([FromForm] UserDTO obj)
+        {
+            if (obj.files.Length > 0)
+            {
+                try
+                {
+                    if (!Directory.Exists(_webHostEnvironmen.WebRootPath + "\\Video\\"))
+                    {
+                        Directory.CreateDirectory(_webHostEnvironmen.WebRootPath + "\\Video\\");
+
+                    }
+                    using (FileStream filestream = System.IO.File.Create(_webHostEnvironmen.WebRootPath + "\\Video\\" + obj.files.FileName))
+                    {
+                        obj.files.CopyTo(filestream);
+                        filestream.Flush();
+                        return "\\Video\\" + obj.files.FileName;
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                    return ex.ToString();
+                }
+            }
+            else
+            {
+                return "Upload Failed";
+            }
+        }
+
+
+
+
+
     }
 }
 
